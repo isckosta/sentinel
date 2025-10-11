@@ -119,9 +119,12 @@ export async function executeWithSentinel(
           });
           
           console.log(chalk.green('\n✅ Comando executado com sucesso\n'));
-        } catch (error: any) {
+        } catch (error) {
           console.log(chalk.red('\n❌ Comando falhou\n'));
-          process.exit(error.status || 1);
+          const exitCode = error && typeof error === 'object' && 'status' in error 
+            ? (error.status as number) 
+            : 1;
+          process.exit(exitCode);
         }
       } else {
         console.log(chalk.green('\n🛡️  Sentinel bloqueou o comando por segurança\n'));
