@@ -21,7 +21,7 @@ Sentinel não é apenas um validador de comandos — é um **mentor técnico com
 ## 🚀 Instalação
 
 ```bash
-npm install -g @mhsolutions/sentinel
+npm install -g @isckosta/sentinel
 ```
 
 ## ⚡ Integração Automática com o Shell
@@ -252,7 +252,7 @@ Todos os eventos são registrados em `~/.sentinel/`:
 
 ```bash
 # Clone o repositório
-git clone https://github.com/mhsolutions/sentinel.git
+git clone https://github.com/isckosta/sentinel.git
 cd sentinel
 
 # Instale dependências
