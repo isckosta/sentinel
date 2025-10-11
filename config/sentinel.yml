@@ -1,3 +1,4 @@
+globalIntercept: false
 rules:
   # Database Operations
   - pattern: "*migrate reset*"
@@ -71,6 +72,14 @@ rules:
     message: "Permissões 777? Isso é um risco de segurança."
 
   # Docker Operations
+  - pattern: "*docker stop*"
+    level: warning
+    message: "Parar containers Docker. Verifique se é o que você realmente quer."
+
+  - pattern: "*docker rm*"
+    level: warning
+    message: "Remover containers Docker. Tenha certeza de que não precisa deles."
+
   - pattern: "*docker system prune*-a*"
     level: warning
     message: "Isso vai remover todos os containers, imagens e volumes não usados."
