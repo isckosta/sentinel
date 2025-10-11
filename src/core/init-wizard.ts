@@ -4,7 +4,18 @@ import path from 'path';
 
 export class InitWizard {
 
-  public async run(): Promise<void> {
+  public async run(shellArg?: string): Promise<void> {
+    if (shellArg) {
+      const script = this.generateShellScript(shellArg);
+      if (script) {
+        console.log(script);
+        return;
+      } else {
+        console.error(chalk.red(`Shell '${shellArg}' não suportado.`));
+        process.exit(1);
+      }
+    }
+
     console.log(chalk.cyan.bold('\nBem-vindo ao assistente de configuração do Sentinel!\n'));
 
     const shell = this.detectShell();
@@ -29,6 +40,48 @@ export class InitWizard {
 
     // Próximos passos serão adicionados aqui
     console.log(chalk.blue(`\nConfigurando para ${shell}...`));
+  }
+
+  private generateShellScript(shell: string): string | null {
+    switch (shell) {
+      case 'zsh':
+        return `
+# Sentinel Shell Integration for Zsh
+_sentinel_preexec() {
+  local cmd="$1"
+  if [[ "$cmd" != "sentinel "* ]]; then
+    if sentinel analyze "$cmd"; then
+      # Command is safe, proceed
+      :
+    else
+      # Command is risky, cancel execution
+      return 1
+    fi
+  fi
+}
+autoload -Uz add-zsh-hook
+add-zsh-hook preexec _sentinel_preexec
+`;
+      case 'bash':
+        return `
+# Sentinel Shell Integration for Bash
+_sentinel_trap_debug() {
+  local cmd="$BASH_COMMAND"
+  if [[ "$cmd" != "sentinel "* ]]; then
+    if sentinel analyze "$cmd"; then
+      # Command is safe, proceed
+      :
+    else
+      # Command is risky, cancel execution
+      return 1
+    fi
+  fi
+}
+trap '_sentinel_trap_debug' DEBUG
+`;
+      default:
+        return null;
+    }
   }
 
   private detectShell(): string | null {
