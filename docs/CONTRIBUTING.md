@@ -6,7 +6,7 @@ Obrigado por considerar contribuir com o Sentinel! Este documento fornece diretr
 
 ### Reportando Bugs
 
-1. Verifique se o bug já foi reportado nas [Issues](https://github.com/mhsolutions/sentinel/issues)
+1. Verifique se o bug já foi reportado nas [Issues](https://github.com/isckosta/sentinel/issues)
 2. Se não, crie uma nova issue com:
    - Título descritivo
    - Passos para reproduzir
