@@ -54,7 +54,10 @@ export class PluginManager {
 
   private isValidPlugin(plugin: unknown): plugin is Plugin {
     return (
-      plugin &&
+      !!plugin &&
+      typeof plugin === 'object' &&
+      'name' in plugin &&
+      'evaluate' in plugin &&
       typeof plugin.name === 'string' &&
       typeof plugin.evaluate === 'function'
     );
