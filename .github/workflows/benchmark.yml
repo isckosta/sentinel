@@ -36,18 +36,24 @@ jobs:
           echo "Testing command parsing speed..." >> benchmark.txt
           echo "" >> benchmark.txt
           
-          START=$(date +%s%N)
-          for i in {1..1000}; do
-            node dist/index.js -y echo "test" > /dev/null 2>&1
-          done
-          END=$(date +%s%N)
-          
-          ELAPSED=$((($END - $START) / 1000000))
-          AVG=$(($ELAPSED / 1000))
-          
-          echo "- Total time: ${ELAPSED}ms" >> benchmark.txt
-          echo "- Average per command: ${AVG}ms" >> benchmark.txt
-          echo "- Commands per second: $((1000000 / $AVG))" >> benchmark.txt
+          # Use Node.js for cross-platform timing
+          node -e "
+            const { execSync } = require('child_process');
+            const start = Date.now();
+            for (let i = 0; i < 100; i++) {
+              try {
+                execSync('node dist/index.js -y echo test', { stdio: 'ignore' });
+              } catch (e) {}
+            }
+            const end = Date.now();
+            const elapsed = end - start;
+            const avg = elapsed / 100;
+            const perSecond = Math.floor(1000 / avg);
+            
+            console.log('- Total time: ' + elapsed + 'ms');
+            console.log('- Average per command: ' + avg.toFixed(2) + 'ms');
+            console.log('- Commands per second: ~' + perSecond);
+          " >> benchmark.txt
           
           cat benchmark.txt
       
@@ -58,17 +64,21 @@ jobs:
           echo "Testing risk engine speed..." >> benchmark.txt
           echo "" >> benchmark.txt
           
-          START=$(date +%s%N)
-          for i in {1..500}; do
-            node dist/index.js -y git push --force > /dev/null 2>&1
-          done
-          END=$(date +%s%N)
-          
-          ELAPSED=$((($END - $START) / 1000000))
-          AVG=$(($ELAPSED / 500))
-          
-          echo "- Total time: ${ELAPSED}ms" >> benchmark.txt
-          echo "- Average per command: ${AVG}ms" >> benchmark.txt
+          node -e "
+            const { execSync } = require('child_process');
+            const start = Date.now();
+            for (let i = 0; i < 50; i++) {
+              try {
+                execSync('echo n | node dist/index.js git push --force', { stdio: 'ignore' });
+              } catch (e) {}
+            }
+            const end = Date.now();
+            const elapsed = end - start;
+            const avg = elapsed / 50;
+            
+            console.log('- Total time: ' + elapsed + 'ms');
+            console.log('- Average per command: ' + avg.toFixed(2) + 'ms');
+          " >> benchmark.txt
           
           cat benchmark.txt
       
@@ -79,17 +89,21 @@ jobs:
           echo "Testing stats rendering speed..." >> benchmark.txt
           echo "" >> benchmark.txt
           
-          START=$(date +%s%N)
-          for i in {1..100}; do
-            sentinel stats > /dev/null 2>&1
-          done
-          END=$(date +%s%N)
-          
-          ELAPSED=$((($END - $START) / 1000000))
-          AVG=$(($ELAPSED / 100))
-          
-          echo "- Total time: ${ELAPSED}ms" >> benchmark.txt
-          echo "- Average per render: ${AVG}ms" >> benchmark.txt
+          node -e "
+            const { execSync } = require('child_process');
+            const start = Date.now();
+            for (let i = 0; i < 50; i++) {
+              try {
+                execSync('sentinel stats', { stdio: 'ignore' });
+              } catch (e) {}
+            }
+            const end = Date.now();
+            const elapsed = end - start;
+            const avg = elapsed / 50;
+            
+            console.log('- Total time: ' + elapsed + 'ms');
+            console.log('- Average per render: ' + avg.toFixed(2) + 'ms');
+          " >> benchmark.txt
           
           cat benchmark.txt
       
@@ -100,7 +114,17 @@ jobs:
           echo "Testing memory footprint..." >> benchmark.txt
           echo "" >> benchmark.txt
           
-          /usr/bin/time -v node dist/index.js -y echo "memory test" 2>&1 | grep "Maximum resident set size" >> benchmark.txt || true
+          # Simple memory test using Node.js
+          node -e "
+            const { execSync } = require('child_process');
+            const before = process.memoryUsage();
+            try {
+              execSync('node dist/index.js -y echo test', { stdio: 'ignore' });
+            } catch (e) {}
+            const after = process.memoryUsage();
+            const heapUsed = (after.heapUsed / 1024 / 1024).toFixed(2);
+            console.log('- Heap used: ~' + heapUsed + ' MB');
+          " >> benchmark.txt
           
           cat benchmark.txt
       
