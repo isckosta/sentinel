@@ -1,0 +1,110 @@
+name: Auto Release
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  auto-release:
+    name: Automatic Release
+    runs-on: ubuntu-latest
+    # Só roda se o commit NÃO for de release (evita loop)
+    if: "!startsWith(github.event.head_commit.message, 'chore(release):')"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run tests
+        run: npm test
+      
+      - name: Build
+        run: npm run build
+      
+      - name: Determine version bump
+        id: version
+        run: |
+          # Pega o último commit message
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          
+          # Determina o tipo de bump baseado no commit
+          if [[ "$COMMIT_MSG" =~ ^feat(\(.*\))?!:|^BREAKING\ CHANGE: ]]; then
+            BUMP="major"
+          elif [[ "$COMMIT_MSG" =~ ^feat(\(.*\))?: ]]; then
+            BUMP="minor"
+          elif [[ "$COMMIT_MSG" =~ ^fix(\(.*\))?: ]]; then
+            BUMP="patch"
+          else
+            echo "No version bump needed (commit doesn't match feat/fix pattern)"
+            echo "bump=none" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          echo "Detected bump type: $BUMP"
+          echo "bump=$BUMP" >> $GITHUB_OUTPUT
+      
+      - name: Bump version and create tag
+        if: steps.version.outputs.bump != 'none'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Bump version
+          npm version ${{ steps.version.outputs.bump }} -m "chore(release): %s"
+          
+          # Get new version
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "NEW_VERSION=v$NEW_VERSION" >> $GITHUB_ENV
+      
+      - name: Push changes and tags
+        if: steps.version.outputs.bump != 'none'
+        run: |
+          git push origin master --follow-tags
+      
+      - name: Create GitHub Release
+        if: steps.version.outputs.bump != 'none'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.NEW_VERSION }}
+          release_name: Release ${{ env.NEW_VERSION }}
+          body: |
+            ## 🛡️ Sentinel ${{ env.NEW_VERSION }}
+            
+            Auto-generated release from commit: ${{ github.event.head_commit.message }}
+            
+            ### Installation
+            ```bash
+            npm install -g @isckosta/sentinel@${{ env.NEW_VERSION }}
+            ```
+          draft: false
+          prerelease: false
+      
+      - name: Publish to NPM
+        if: steps.version.outputs.bump != 'none'
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      
+      - name: Summary
+        if: steps.version.outputs.bump != 'none'
+        run: |
+          echo "## 🎉 Release Published" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: ${{ env.NEW_VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Type**: ${{ steps.version.outputs.bump }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **NPM**: https://www.npmjs.com/package/@isckosta/sentinel" >> $GITHUB_STEP_SUMMARY
+          echo "- **GitHub**: https://github.com/${{ github.repository }}/releases/tag/${{ env.NEW_VERSION }}" >> $GITHUB_STEP_SUMMARY
