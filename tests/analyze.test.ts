@@ -40,7 +40,7 @@ describe('Sentinel Analyze Command', () => {
 
   beforeEach(() => {
     // Mock process.exit para evitar que os testes parem
-    mockExit = jest.spyOn(process, 'exit').mockImplementation((() => {}) as (code?: any) => never);
+    mockExit = jest.spyOn(process, 'exit').mockImplementation((() => {}) as (code?: number | string) => never);
     
     // Mock os métodos dos componentes
     jest.spyOn(CommandParser.prototype, 'parse').mockReturnValue(mockCommand);
