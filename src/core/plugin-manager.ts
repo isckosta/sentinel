@@ -35,6 +35,7 @@ export class PluginManager {
         return;
       }
       
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       pluginModule = require(resolvedPath);
       
       const plugin: Plugin = pluginModule.default || pluginModule;
@@ -51,7 +52,7 @@ export class PluginManager {
     }
   }
 
-  private isValidPlugin(plugin: any): plugin is Plugin {
+  private isValidPlugin(plugin: unknown): plugin is Plugin {
     return (
       plugin &&
       typeof plugin.name === 'string' &&
