@@ -1,5 +1,5 @@
 {
-  "name": "@mhsolutions/sentinel",
+  "name": "@isckosta/sentinel",
   "version": "0.2.0",
   "description": "O guardião entre você e o caos. Um firewall cognitivo para DevOps.",
   "main": "dist/index.js",
@@ -41,16 +41,16 @@
     "command-protection",
     "deployment-safety"
   ],
-  "author": "MH Solutions",
+  "author": "Israel Costa",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mhsolutions/sentinel.git"
+    "url": "https://github.com/isckosta/sentinel.git"
   },
   "bugs": {
-    "url": "https://github.com/mhsolutions/sentinel/issues"
+    "url": "https://github.com/isckosta/sentinel/issues"
   },
-  "homepage": "https://github.com/mhsolutions/sentinel#readme",
+  "homepage": "https://github.com/isckosta/sentinel#readme",
   "engines": {
     "node": ">=20.0.0"
   },
