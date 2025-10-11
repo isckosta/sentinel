@@ -1,0 +1,68 @@
+<h1>Changelog</h1>
+<p>All notable changes to this project will be documented in this file.</p>
+<p>The format is based on <a href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>,
+and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
+<h2><a href="https://github.com/mhsolutions/sentinel/compare/v0.1.0...HEAD">Unreleased</a></h2>
+<h2><a href="https://github.com/mhsolutions/sentinel/releases/tag/v0.1.0">0.1.0</a> - 2025-10-10</h2>
+<h3>Added</h3>
+<ul>
+<li>🎉 Initial release of Sentinel</li>
+<li>Command parsing with context detection (branch, environment, directory)</li>
+<li>Risk engine with configurable rules and heuristics</li>
+<li>Decision engine with three risk levels (safe, warning, critical)</li>
+<li>Telemetry system with stats and event tracking</li>
+<li>Plugin system for extensibility</li>
+<li>Stats display with colorful terminal UI</li>
+<li>YAML-based configuration system</li>
+<li>Default rule set for common dangerous operations</li>
+<li>Example plugin for branch checking</li>
+<li>Comprehensive test suite</li>
+<li>Full documentation (README, ARCHITECTURE, PLUGIN_GUIDE, CONTRIBUTING)</li>
+<li>CI/CD pipeline with GitHub Actions</li>
+<li>MIT License</li>
+</ul>
+<h3>Features</h3>
+<ul>
+<li><strong>Risk Assessment</strong>: Analyzes commands based on patterns, context, and heuristics</li>
+<li><strong>Interactive Confirmations</strong>: Asks for user confirmation on risky commands</li>
+<li><strong>Telemetry</strong>: Tracks all commands and maintains statistics</li>
+<li><strong>Plugin Support</strong>: Extensible architecture for custom rules</li>
+<li><strong>Git Integration</strong>: Detects current branch and repository context</li>
+<li><strong>Environment Detection</strong>: Identifies production/staging/development environments</li>
+<li><strong>Time-based Heuristics</strong>: Increases risk for late-night and weekend operations</li>
+<li><strong>Force Flag Detection</strong>: Warns about --force and similar dangerous flags</li>
+<li><strong>Destructive Command Detection</strong>: Identifies delete, drop, reset, etc.</li>
+</ul>
+<h3>Heuristics</h3>
+<ul>
+<li>Main branch operations: +20 risk</li>
+<li>Production environment: +25 risk</li>
+<li>Force flags: +30 risk</li>
+<li>Destructive keywords: +25 risk</li>
+<li>Late night operations (22h-6h): +15 risk</li>
+<li>Weekend deployments: +20 risk</li>
+<li>Database migrations: +15 risk</li>
+</ul>
+<h3>Commands</h3>
+<ul>
+<li><code>sentinel exec &lt;command&gt;</code>: Execute command with Sentinel protection</li>
+<li><code>sentinel &lt;command&gt;</code>: Shorthand for exec</li>
+<li><code>sentinel stats</code>: Display statistics and history</li>
+<li><code>sentinel --help</code>: Show help information</li>
+</ul>
+<h3>Configuration</h3>
+<ul>
+<li>YAML-based rule configuration</li>
+<li>Pattern matching with glob support</li>
+<li>Conditional rules (branch, environment)</li>
+<li>Plugin loading from file paths</li>
+</ul>
+<h3>Documentation</h3>
+<ul>
+<li>Comprehensive README with examples</li>
+<li>Architecture documentation</li>
+<li>Plugin development guide</li>
+<li>Contributing guidelines</li>
+<li>MIT License</li>
+</ul>
+

@@ -1,0 +1,129 @@
+<h1>Arquitetura do Sentinel</h1>
+<h2>Visão Geral</h2>
+<p>Sentinel é construído com uma arquitetura modular que separa claramente as responsabilidades. Ele pode operar em dois modos: <strong>manual</strong> (onde é invocado explicitamente) e <strong>automático</strong> (integrado ao shell do usuário).</p>
+<h2>Arquitetura de Integração com o Shell (Modo Automático)</h2>
+<p>Para permitir a interceptação automática de comandos, o Sentinel se integra ao shell do usuário (Bash, Zsh) através de um sistema de hooks.</p>
+<p><strong>Fluxo de Execução:</strong></p>
+<pre><code>1. User types any command (e.g., &#39;git push --force&#39;)
+   ↓
+2. Shell Hook (preexec/DEBUG) intercepts the command string
+   ↓
+3. Hook executes: sentinel analyze &quot;git push --force&quot;
+   (A interatividade é preservada redirecionando para /dev/tty)
+   ↓
+4. Sentinel Core (Risk &amp; Decision Engines) analisa o comando
+   ↓
+5. Sentinel sai com um código de status:
+   - 0: Comando aprovado
+   - 1: Comando bloqueado
+   ↓
+6. Shell Hook inspeciona o código de status
+   ↓
+7. Se 0, o hook termina e permite que o shell execute o comando original.
+   Se 1, o hook retorna um erro, cancelando a execução do comando original.
+</code></pre>
+<p><strong>Componentes Chave:</strong></p>
+<ul>
+<li><strong><code>sentinel init &lt;shell&gt;</code></strong>: Comando que gera o script de hook apropriado para o shell do usuário.</li>
+<li><strong><code>sentinel analyze &lt;comando...&gt;</code></strong>: Um modo de operação que executa todo o fluxo de análise de risco e decisão, mas, em vez de executar o comando, ele se comunica com o processo pai (o hook) através do seu código de saída.</li>
+<li><strong>Hooks de Shell</strong>: Scripts leves que são registrados nas funções <code>preexec</code> (Zsh) ou <code>trap DEBUG</code> (Bash) para inspecionar cada comando antes de sua execução.</li>
+</ul>
+<h2>Arquitetura Principal (Modo Manual)</h2>
+<p>Este modo é usado quando se chama <code>sentinel exec &lt;comando...&gt;</code>.</p>
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│                         CLI (index.ts)                       │
+│                    Commander.js Interface                    │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                     Command Parser                           │
+│  • Extrai binário, args, branch, ambiente                   │
+│  • Detecta contexto de execução                             │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      Risk Engine                             │
+│  • Aplica regras do config YAML                             │
+│  • Executa heurísticas de risco                             │
+│  • Calcula score 0-100                                      │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Plugin Manager                            │
+│  • Carrega plugins customizados                             │
+│  • Ajusta score baseado em lógica externa                   │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   Decision Engine                            │
+│  • safe: executa automaticamente                            │
+│  • warning: pede confirmação                                │
+│  • critical: requer confirmação consciente                  │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      Telemetry                               │
+│  • Registra evento em logs                                  │
+│  • Atualiza estatísticas                                    │
+│  • Notifica plugins                                         │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   Command Execution                          │
+│  • Executa comando se aprovado                              │
+│  • Bloqueia se rejeitado                                    │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+<h2>Módulos Principais</h2>
+<h3>1. Command Parser (<code>core/command-parser.ts</code>)</h3>
+<p><strong>Responsabilidade</strong>: Extrair informações contextuais do comando.</p>
+<p><strong>Entradas</strong>: Array de argumentos do comando</p>
+<p><strong>Saídas</strong>: <code>ParsedCommand</code> com <code>binary</code>, <code>args</code>, <code>fullCommand</code>, <code>currentBranch</code>, <code>currentDirectory</code>, <code>environment</code>.</p>
+<h3>2. Risk Engine (<code>core/risk-engine.ts</code>)</h3>
+<p><strong>Responsabilidade</strong>: Calcular score de risco do comando.</p>
+<p><strong>Processo</strong>:</p>
+<ol>
+<li><strong>Matching de Regras</strong>: Itera sobre regras do <code>sentinel.yml</code>, verifica condições e aplica score.</li>
+<li><strong>Heurísticas</strong>: Aplica scores adicionais para padrões de risco conhecidos (ex: <code>--force</code>, <code>main</code> branch, etc.).</li>
+<li><strong>Normalização</strong>: Garante que o score final esteja entre 0-100 e o classifica em <code>safe</code>, <code>warning</code> ou <code>critical</code>.</li>
+</ol>
+<h3>3. Decision Engine (<code>core/decision-engine.ts</code>)</h3>
+<p><strong>Responsabilidade</strong>: Decidir a ação (<code>allow</code>/<code>block</code>) baseada no risco, interagindo com o usuário através de prompts se necessário.</p>
+<h3>4. Telemetry (<code>core/telemetry.ts</code>)</h3>
+<p><strong>Responsabilidade</strong>: Registrar e agregar eventos em <code>~/.sentinel/</code>.</p>
+<h3>5. Plugin Manager (<code>core/plugin-manager.ts</code>)</h3>
+<p><strong>Responsabilidade</strong>: Carregar e executar plugins customizados para estender a lógica de avaliação de risco.</p>
+<h2>Padrões de Design</h2>
+<ul>
+<li><strong>Single Responsibility Principle</strong>: Cada módulo tem uma responsabilidade clara.</li>
+<li><strong>Dependency Injection</strong>: Componentes recebem dependências via construtor (ex: <code>new RiskEngine(config)</code>).</li>
+<li><strong>Strategy Pattern</strong>: Plugins implementam estratégias customizadas de avaliação.</li>
+<li><strong>Observer Pattern</strong>: Plugins podem observar eventos via <code>onEvent()</code>.</li>
+</ul>
+<h2>Extensibilidade</h2>
+<p>A extensibilidade é um pilar do Sentinel, permitindo que os usuários adaptem a ferramenta às suas necessidades específicas.</p>
+<h3>Adicionar Nova Heurística</h3>
+<ol>
+<li>Edite <code>core/risk-engine.ts</code></li>
+<li>Adicione lógica em <code>applyHeuristics()</code></li>
+<li>Adicione testes em <code>tests/risk-engine.test.ts</code></li>
+</ol>
+<h3>Criar Novo Plugin</h3>
+<ol>
+<li>Crie um arquivo <code>.js</code> na pasta <code>plugins/</code></li>
+<li>Exporte um objeto com a interface <code>Plugin</code> (<code>name</code>, <code>evaluate</code>, <code>onEvent</code>)</li>
+<li>Adicione o caminho do plugin no seu <code>sentinel.yml</code></li>
+</ol>
+<h2>Segurança</h2>
+<ul>
+<li><strong>Execução de Plugins</strong>: Plugins são código arbitrário e devem vir de fontes confiáveis.</li>
+<li><strong>Logs</strong>: Logs são armazenados no diretório do usuário (<code>~/.sentinel/</code>) e não devem conter dados sensíveis como senhas.</li>
+<li><strong>Execução de Comandos</strong>: No modo <code>exec</code>, o Sentinel executa comandos com as mesmas permissões do usuário.</li>
+</ul>
+

@@ -1,0 +1,187 @@
+<h1>Guia de Contribuição</h1>
+<p>Obrigado por considerar contribuir com o Sentinel! Este documento fornece diretrizes para contribuir com o projeto.</p>
+<h2>🎯 Como Contribuir</h2>
+<h3>Reportando Bugs</h3>
+<ol>
+<li>Verifique se o bug já foi reportado nas <a href="https://github.com/isckosta/sentinel/issues">Issues</a></li>
+<li>Se não, crie uma nova issue com:<ul>
+<li>Título descritivo</li>
+<li>Passos para reproduzir</li>
+<li>Comportamento esperado vs atual</li>
+<li>Versão do Node.js e Sentinel</li>
+<li>Sistema operacional</li>
+</ul>
+</li>
+</ol>
+<h3>Sugerindo Melhorias</h3>
+<ol>
+<li>Abra uma issue com tag <code>enhancement</code></li>
+<li>Descreva claramente:<ul>
+<li>O problema que a feature resolve</li>
+<li>Como você imagina a solução</li>
+<li>Exemplos de uso</li>
+</ul>
+</li>
+</ol>
+<h3>Pull Requests</h3>
+<ol>
+<li>Fork o repositório</li>
+<li>Crie uma branch: <code>git checkout -b feature/minha-feature</code></li>
+<li>Faça suas mudanças</li>
+<li>Adicione testes</li>
+<li>Rode os testes: <code>npm test</code></li>
+<li>Commit: <code>git commit -m &#39;feat: adiciona nova feature&#39;</code></li>
+<li>Push: <code>git push origin feature/minha-feature</code></li>
+<li>Abra um Pull Request</li>
+</ol>
+<h2>📝 Padrões de Código</h2>
+<h3>TypeScript</h3>
+<ul>
+<li>Use TypeScript estrito</li>
+<li>Sempre defina tipos explícitos</li>
+<li>Evite <code>any</code> quando possível</li>
+<li>Use interfaces para contratos públicos</li>
+</ul>
+<pre><code class="language-typescript">// ✅ Bom
+function calculateRisk(command: ParsedCommand): number {
+  return 0;
+}
+
+// ❌ Ruim
+function calculateRisk(command: any): any {
+  return 0;
+}
+</code></pre>
+<h3>Naming Conventions</h3>
+<ul>
+<li>Classes: <code>PascalCase</code></li>
+<li>Funções/Métodos: <code>camelCase</code></li>
+<li>Constantes: <code>UPPER_SNAKE_CASE</code></li>
+<li>Arquivos: <code>kebab-case.ts</code></li>
+</ul>
+<h3>Comentários</h3>
+<ul>
+<li>Use JSDoc para funções públicas</li>
+<li>Comente lógica complexa</li>
+<li>Não comente o óbvio</li>
+</ul>
+<pre><code class="language-typescript">/**
+ * Calculates the risk score for a given command
+ * @param command - Parsed command object
+ * @returns Risk score between 0-100
+ */
+function calculateRisk(command: ParsedCommand): number {
+  // Complex logic here deserves a comment
+  const baseScore = command.args.length * 10;
+  return Math.min(baseScore, 100);
+}
+</code></pre>
+<h2>🧪 Testes</h2>
+<h3>Escrevendo Testes</h3>
+<ul>
+<li>Todo código novo deve ter testes</li>
+<li>Mantenha cobertura &gt; 80%</li>
+<li>Use nomes descritivos</li>
+</ul>
+<pre><code class="language-typescript">describe(&#39;RiskEngine&#39;, () =&gt; {
+  test(&#39;should return critical for dangerous commands&#39;, () =&gt; {
+    // Arrange
+    const command = createDangerousCommand();
+    
+    // Act
+    const result = engine.assess(command);
+    
+    // Assert
+    expect(result.level).toBe(&#39;critical&#39;);
+  });
+});
+</code></pre>
+<h3>Rodando Testes</h3>
+<pre><code class="language-bash"># Todos os testes
+npm test
+
+# Watch mode
+npm run test:watch
+
+# Com coverage
+npm test -- --coverage
+</code></pre>
+<h2>📦 Commits</h2>
+<p>Use <a href="https://www.conventionalcommits.org/">Conventional Commits</a>:</p>
+<ul>
+<li><code>feat:</code> Nova feature</li>
+<li><code>fix:</code> Correção de bug</li>
+<li><code>docs:</code> Mudanças na documentação</li>
+<li><code>style:</code> Formatação, ponto e vírgula, etc</li>
+<li><code>refactor:</code> Refatoração de código</li>
+<li><code>test:</code> Adição ou correção de testes</li>
+<li><code>chore:</code> Tarefas de build, configs, etc</li>
+</ul>
+<p>Exemplos:</p>
+<pre><code>feat: adiciona suporte para Docker commands
+fix: corrige cálculo de score para branches
+docs: atualiza guia de plugins
+test: adiciona testes para telemetry
+</code></pre>
+<h2>🏗️ Estrutura do Projeto</h2>
+<pre><code>sentinel/
+├── src/
+│   ├── core/          # Lógica principal
+│   ├── ui/            # Interface do usuário
+│   ├── utils/         # Utilitários
+│   └── types/         # Definições de tipos
+├── tests/             # Testes
+├── docs/              # Documentação
+├── config/            # Configurações padrão
+└── plugins/           # Plugins exemplo
+</code></pre>
+<h2>🔍 Code Review</h2>
+<p>Pull requests serão revisados considerando:</p>
+<ol>
+<li><strong>Funcionalidade</strong>: Resolve o problema proposto?</li>
+<li><strong>Testes</strong>: Tem testes adequados?</li>
+<li><strong>Documentação</strong>: Está documentado?</li>
+<li><strong>Estilo</strong>: Segue os padrões do projeto?</li>
+<li><strong>Performance</strong>: Não introduz problemas de performance?</li>
+</ol>
+<h2>🎨 UI/UX</h2>
+<p>Ao adicionar mensagens ou output:</p>
+<ul>
+<li>Use cores apropriadas (chalk)</li>
+<li>Mantenha o tom profissional mas espirituoso</li>
+<li>Seja claro e conciso</li>
+<li>Pense na experiência do usuário</li>
+</ul>
+<h2>🔌 Desenvolvendo Plugins</h2>
+<p>Veja <a href="./PLUGIN_GUIDE.md">PLUGIN_GUIDE.md</a> para detalhes sobre como criar plugins.</p>
+<h2>📚 Documentação</h2>
+<ul>
+<li>Atualize o README.md se necessário</li>
+<li>Adicione exemplos de uso</li>
+<li>Documente breaking changes</li>
+<li>Atualize CHANGELOG.md</li>
+</ul>
+<h2>🚀 Release Process</h2>
+<ol>
+<li>Atualize versão: <code>npm version [patch|minor|major]</code></li>
+<li>Atualize CHANGELOG.md</li>
+<li>Commit: <code>git commit -m &quot;chore: release vX.Y.Z&quot;</code></li>
+<li>Tag: <code>git tag vX.Y.Z</code></li>
+<li>Push: <code>git push &amp;&amp; git push --tags</code></li>
+<li>CI/CD publica automaticamente</li>
+</ol>
+<h2>💬 Comunicação</h2>
+<ul>
+<li>Issues: Para bugs e features</li>
+<li>Discussions: Para perguntas e ideias</li>
+<li>Discord: [Link do servidor] (futuro)</li>
+</ul>
+<h2>📄 Licença</h2>
+<p>Ao contribuir, você concorda que suas contribuições serão licenciadas sob a licença MIT do projeto.</p>
+<h2>🙏 Reconhecimento</h2>
+<p>Todos os contribuidores serão adicionados ao README.md na seção de Contributors.</p>
+<h2>❓ Dúvidas?</h2>
+<p>Não hesite em abrir uma issue com suas dúvidas ou entrar em contato com os mantenedores.</p>
+<hr>
+<p>Obrigado por contribuir com o Sentinel! 🛡️</p>
+

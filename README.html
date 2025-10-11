@@ -1,0 +1,278 @@
+<h1>🛡️ Sentinel</h1>
+<blockquote>
+<p><strong>O guardião entre você e o caos</strong></p>
+</blockquote>
+<p>Sentinel é um firewall cognitivo para DevOps — um CLI inteligente que intercepta comandos perigosos antes que eles causem desastres, respondendo com humor, consciência contextual e educação técnica.</p>
+<p><a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+<a href="https://nodejs.org/"><img src="https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen" alt="Node.js Version"></a>
+<a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.9+-blue" alt="TypeScript"></a></p>
+<h2>🎯 Filosofia</h2>
+<p>Sentinel não é apenas um validador de comandos — é um <strong>mentor técnico com personalidade</strong>. Ele:</p>
+<ul>
+<li>🧠 <strong>Educa antes de impedir</strong>: Provoca reflexão técnica ao invés de simplesmente bloquear</li>
+<li>🎭 <strong>Tem personalidade</strong>: Usa humor inteligente e sarcasmo leve para tornar a segurança memorável</li>
+<li>🔍 <strong>É contextual</strong>: Analisa branch Git, ambiente, horário e padrões de risco</li>
+<li>📊 <strong>Aprende com você</strong>: Mantém estatísticas e histórico de decisões</li>
+<li>🔌 <strong>É extensível</strong>: Sistema de plugins permite customização total</li>
+</ul>
+<h2>🚀 Instalação</h2>
+<pre><code class="language-bash">npm install -g @isckosta/sentinel
+</code></pre>
+<h2>⚡ Integração Automática com o Shell</h2>
+<p>Para a melhor experiência, o Sentinel pode se integrar diretamente ao seu terminal para analisar <strong>todos</strong> os comandos que você executa, sem a necessidade de digitar <code>sentinel exec</code>.</p>
+<p>Execute o comando abaixo para o seu shell (Bash ou Zsh):</p>
+<pre><code class="language-bash"># Para Zsh (recomendado)
+sentinel init zsh
+
+# Para Bash
+sentinel init bash
+</code></pre>
+<p>O comando irá gerar um script. Para ativá-lo, adicione a seguinte linha ao final do seu arquivo de configuração do shell (<code>~/.zshrc</code> para Zsh, <code>~/.bashrc</code> para Bash):</p>
+<pre><code class="language-bash"># Adicione esta linha ao seu ~/.zshrc ou ~/.bashrc
+eval &quot;$(sentinel init zsh)&quot; # ou bash
+</code></pre>
+<p>Após reiniciar seu terminal, o Sentinel estará ativo e vigiando todos os seus comandos.</p>
+<h2>📖 Uso Manual (Alternativo)</h2>
+<p>Se preferir não usar a integração automática, você pode invocar o Sentinel manualmente para cada comando.</p>
+<h3>Análise de Comandos</h3>
+<p>Execute qualquer comando através do <code>sentinel exec</code>:</p>
+<pre><code class="language-bash">sentinel exec prisma migrate reset --force
+</code></pre>
+<p>Ou, como atalho, simplesmente passe o comando diretamente:</p>
+<pre><code class="language-bash">sentinel prisma migrate reset --force
+</code></pre>
+<h2>📊 Comandos Disponíveis</h2>
+<ul>
+<li><code>sentinel stats</code>: Exibe um relatório colorido com estatísticas de uso.</li>
+<li><code>sentinel exec &lt;comando...&gt;</code>: Executa um comando sob a supervisão do Sentinel.</li>
+<li><code>sentinel analyze &lt;comando...&gt;</code>: Analisa um comando e retorna um código de status (0 para seguro, 1 para bloqueado) sem executá-lo. Usado principalmente pela integração com o shell.</li>
+<li><code>sentinel init &lt;bash|zsh&gt;</code>: Gera o script de integração para o shell especificado.</li>
+</ul>
+<h3>Flags Globais</h3>
+<ul>
+<li><code>-y, --yes</code>: Auto-aprova comandos de baixo risco (<code>safe</code>).</li>
+<li><code>-c, --config &lt;path&gt;</code>: Usa um arquivo de configuração <code>sentinel.yml</code> customizado.</li>
+</ul>
+<h2>🎨 Exemplos</h2>
+<h3>Comando Crítico Bloqueado</h3>
+<pre><code class="language-bash">$ rm -rf /
+
+🚨 ALERTA CRÍTICO - COMANDO PERIGOSO DETECTADO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Comando: rm -rf /
+Score de Risco: 100/100
+
+Motivos para bloqueio:
+  • Isso vai destruir o sistema. PARE IMEDIATAMENTE.
+  • Remoção recursiva forçada. Verifique o caminho duas vezes.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 Sentinel recomenda:
+  • Não executar este comando. Nunca.
+  • Tomar um café e repensar suas escolhas.
+
+? Você REALMENTE entende as consequências deste comando? (y/N)
+</code></pre>
+<h3>Comando com Aviso</h3>
+<pre><code class="language-bash">$ git push --force
+
+⚠️  ALERTA DE RISCO MODERADO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Comando: git push --force
+Score de Risco: 45/100
+
+Motivos:
+  • Force push pode reescrever história. Equipe está ciente?
+  • Flag --force detectada. Cuidado com o que deseja.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+? Deseja prosseguir mesmo assim? (y/N)
+</code></pre>
+<h3>Estatísticas</h3>
+<pre><code class="language-bash">$ sentinel stats
+
+╔════════════════════════════════════════════════════════════════╗
+║                    🛡️  SENTINEL STATS                         ║
+╚════════════════════════════════════════════════════════════════╝
+
+📊 Visão Geral
+────────────────────────────────────────────────────────────────
+  Total de comandos avaliados:  127
+  Comandos executados:          115 (90.6%)
+  Comandos bloqueados:          12 (9.4%)
+
+⚠️  Distribuição de Risco
+────────────────────────────────────────────────────────────────
+  ✓ Safe:     ████████████████████████░░░░░░ 98 (77.2%)
+  ⚠ Warning:  ████░░░░░░░░░░░░░░░░░░░░░░░░░░ 17 (13.4%)
+  ✖ Critical: ██░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 12 (9.4%)
+
+🚨 Informações de Incidentes
+────────────────────────────────────────────────────────────────
+  Último incidente:             15 de out, 14:23
+  Dias sem autossabotagem:      7 👍 (Melhorando)
+
+📜 Eventos Recentes
+────────────────────────────────────────────────────────────────
+  ✓ ✓ out 15, 15:20 safe     npm test
+  ✓ ⚠ out 15, 14:45 warning  git push --force
+  ✗ ✖ out 15, 14:23 critical prisma migrate reset --force
+  ✓ ✓ out 15, 10:30 safe     npm run build
+  ✓ ✓ out 14, 18:15 safe     git commit -m &quot;fix&quot;
+
+────────────────────────────────────────────────────────────────
+  🛡️  Sentinel está de olho. Continue operando com consciência.
+────────────────────────────────────────────────────────────────
+</code></pre>
+<h2>⚙️ Configuração</h2>
+<p>Crie um arquivo <code>sentinel.yml</code> na raiz do seu projeto:</p>
+<pre><code class="language-yaml">rules:
+  - pattern: &quot;*migrate reset*&quot;
+    level: critical
+    message: &quot;Esse comando parece suicida. Quer pensar de novo?&quot;
+    conditions:
+      branch: &quot;!main&quot;
+      env: &quot;!production&quot;
+
+  - pattern: &quot;*deploy*main*&quot;
+    level: critical
+    message: &quot;Deploy sem review? Tá apostando contra o universo?&quot;
+
+  - pattern: &quot;*--force*&quot;
+    level: warning
+    message: &quot;Flag --force detectada. Cuidado com o que deseja.&quot;
+
+plugins:
+  - &quot;./plugins/custom-branch-check.js&quot;
+</code></pre>
+<h3>Níveis de Risco</h3>
+<ul>
+<li><strong>safe</strong> (0-39): Comando seguro, executa automaticamente</li>
+<li><strong>warning</strong> (40-69): Pede confirmação do usuário</li>
+<li><strong>critical</strong> (70-100): Requer confirmação consciente e digitação do comando</li>
+</ul>
+<h3>Condições</h3>
+<ul>
+<li><code>branch</code>: Verifica a branch Git atual (use <code>!</code> para negar)</li>
+<li><code>env</code>: Verifica o ambiente (production, staging, development)</li>
+<li><code>time</code>: Verifica horário (implementação futura)</li>
+</ul>
+<h2>🔌 Sistema de Plugins</h2>
+<p>Crie plugins customizados para estender o comportamento do Sentinel:</p>
+<pre><code class="language-javascript">// plugins/custom-check.js
+module.exports = {
+  name: &#39;custom-check&#39;,
+  
+  evaluate: (command, currentScore) =&gt; {
+    // Ajusta o score baseado em lógica customizada
+    if (command.currentBranch === &#39;main&#39;) {
+      return currentScore + 15;
+    }
+    return currentScore;
+  },
+  
+  onEvent: (event) =&gt; {
+    // Reage a eventos (opcional)
+    if (event.riskLevel === &#39;critical&#39; &amp;&amp; event.executed) {
+      console.log(&#39;ALERTA: Comando crítico executado!&#39;);
+    }
+  }
+};
+</code></pre>
+<h2>🧪 Heurísticas de Risco</h2>
+<p>Sentinel aplica múltiplas heurísticas para calcular o score de risco:</p>
+<ul>
+<li><strong>Branch principal</strong> (+20): Operações em <code>main</code> ou <code>master</code></li>
+<li><strong>Ambiente de produção</strong> (+25): Comandos em produção</li>
+<li><strong>Flag --force</strong> (+30): Uso de flags de força</li>
+<li><strong>Comandos destrutivos</strong> (+25): <code>delete</code>, <code>drop</code>, <code>reset</code>, <code>destroy</code>, etc.</li>
+<li><strong>Horário noturno</strong> (+15): Comandos após 22h ou antes de 6h</li>
+<li><strong>Deploy no fim de semana</strong> (+20): Deploys em sábado ou domingo</li>
+<li><strong>Migrações de banco</strong> (+15): Comandos <code>migrate</code></li>
+</ul>
+<h2>📊 Telemetria</h2>
+<p>Todos os eventos são registrados em <code>~/.sentinel/</code>:</p>
+<ul>
+<li><code>telemetry.log</code>: Log detalhado de todos os comandos</li>
+<li><code>stats.json</code>: Estatísticas agregadas</li>
+<li><code>events.json</code>: Histórico dos últimos 1000 eventos</li>
+</ul>
+<h2>🛠️ Desenvolvimento</h2>
+<h3>Requisitos</h3>
+<ul>
+<li>Node.js 20+</li>
+<li>TypeScript 5.9+</li>
+</ul>
+<h3>Setup</h3>
+<pre><code class="language-bash"># Clone o repositório
+git clone https://github.com/isckosta/sentinel.git
+cd sentinel
+
+# Instale dependências
+npm install
+
+# Build
+npm run build
+
+# Testes
+npm test
+
+# Desenvolvimento
+npm run dev
+</code></pre>
+<h3>Scripts</h3>
+<ul>
+<li><code>npm run build</code>: Compila TypeScript</li>
+<li><code>npm run start</code>: Executa versão compilada</li>
+<li><code>npm run dev</code>: Executa com ts-node</li>
+<li><code>npm test</code>: Roda testes com Jest</li>
+<li><code>npm run lint</code>: Verifica código com ESLint</li>
+<li><code>npm run release</code>: Cria nova versão e publica</li>
+</ul>
+<h2>🧪 Testes</h2>
+<pre><code class="language-bash">npm test
+</code></pre>
+<p>Cobertura de testes inclui:</p>
+<ul>
+<li>Parsing de comandos</li>
+<li>Cálculo de risco</li>
+<li>Sistema de plugins</li>
+<li>Telemetria e estatísticas</li>
+</ul>
+<h2>📝 Roadmap</h2>
+<ul>
+<li><input disabled="" type="checkbox"> Integração com Slack/Discord para alertas</li>
+<li><input disabled="" type="checkbox"> Machine learning para detecção de padrões</li>
+<li><input disabled="" type="checkbox"> Modo de aprendizado (observa sem bloquear)</li>
+<li><input disabled="" type="checkbox"> Dashboard web para visualização de métricas</li>
+<li><input disabled="" type="checkbox"> Integração com CI/CD pipelines</li>
+<li><input disabled="" type="checkbox"> Suporte a múltiplos times/projetos</li>
+<li><input disabled="" type="checkbox"> Análise de impacto baseada em histórico</li>
+</ul>
+<h2>🤝 Contribuindo</h2>
+<p>Contribuições são bem-vindas! Por favor:</p>
+<ol>
+<li>Fork o projeto</li>
+<li>Crie uma branch para sua feature (<code>git checkout -b feature/amazing</code>)</li>
+<li>Commit suas mudanças (<code>git commit -m &#39;Add amazing feature&#39;</code>)</li>
+<li>Push para a branch (<code>git push origin feature/amazing</code>)</li>
+<li>Abra um Pull Request</li>
+</ol>
+<h2>📄 Licença</h2>
+<p>MIT © MH Solutions</p>
+<h2>🎭 Frases do Sentinel</h2>
+<p>Algumas das mensagens que você pode encontrar:</p>
+<ul>
+<li><em>&quot;Esse comando parece suicida. Quer pensar de novo?&quot;</em></li>
+<li><em>&quot;Deploy sem review? Tá apostando contra o universo?&quot;</em></li>
+<li><em>&quot;Nada de bom acontece depois das 22h.&quot;</em></li>
+<li><em>&quot;Deploy no fim de semana? Seus planos merecem mais que isso.&quot;</em></li>
+<li><em>&quot;Force push pode reescrever história. Equipe está ciente?&quot;</em></li>
+<li><em>&quot;DROP DATABASE? Sério? Respire fundo antes de continuar.&quot;</em></li>
+</ul>
+<h2>💬 Epílogo</h2>
+<p>Sentinel é mais que um CLI — é um <strong>guardião da sanidade DevOps</strong>. Um software que transforma descuido em aprendizado e impede desastres antes que virem chamados de suporte.</p>
+<p><strong>Slogan</strong>: <em>Sentinel — o guardião entre você e o caos.</em></p>
+<hr>
+<p>Feito com 🛡️ e ☕ por <a href="https://github.com/isckosta">Israel C.</a></p>
+
