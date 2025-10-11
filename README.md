@@ -332,4 +332,4 @@ Sentinel é mais que um CLI — é um **guardião da sanidade DevOps**. Um softw
 
 ---
 
-Feito com 🛡️ e ☕ por [MH Solutions](https://github.com/mhsolutions)
+Feito com 🛡️ e ☕ por [Israel C.](https://github.com/isckosta)
