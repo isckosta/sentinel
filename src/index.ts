@@ -43,11 +43,11 @@ program
 import { InitWizard } from './core/init-wizard';
 
 program
-  .command('init')
-  .description('Inicia um assistente de configuração interativo para o Sentinel')
-  .action(async () => {
+  .command('init [shell]')
+  .description('Gera o script de integração para o shell especificado (bash, zsh, fish) ou inicia um assistente interativo.')
+  .action(async (shell: string | undefined) => {
     const wizard = new InitWizard();
-    await wizard.run();
+    await wizard.run(shell);
   });
 
 // Default action when no command is specified
