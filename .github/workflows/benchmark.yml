@@ -1,0 +1,132 @@
+name: Performance Benchmark
+
+on:
+  push:
+    branches: [master, develop]
+  pull_request:
+    branches: [master, develop]
+  workflow_dispatch:
+
+jobs:
+  benchmark:
+    name: Run Performance Benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build
+        run: npm run build
+      
+      - name: Link package
+        run: npm link
+      
+      - name: Benchmark - Command Parsing
+        id: parse-bench
+        run: |
+          echo "## ⚡ Command Parsing Performance" > benchmark.txt
+          echo "Testing command parsing speed..." >> benchmark.txt
+          echo "" >> benchmark.txt
+          
+          START=$(date +%s%N)
+          for i in {1..1000}; do
+            node dist/index.js -y echo "test" > /dev/null 2>&1
+          done
+          END=$(date +%s%N)
+          
+          ELAPSED=$((($END - $START) / 1000000))
+          AVG=$(($ELAPSED / 1000))
+          
+          echo "- Total time: ${ELAPSED}ms" >> benchmark.txt
+          echo "- Average per command: ${AVG}ms" >> benchmark.txt
+          echo "- Commands per second: $((1000000 / $AVG))" >> benchmark.txt
+          
+          cat benchmark.txt
+      
+      - name: Benchmark - Risk Assessment
+        run: |
+          echo "" >> benchmark.txt
+          echo "## 🎯 Risk Assessment Performance" >> benchmark.txt
+          echo "Testing risk engine speed..." >> benchmark.txt
+          echo "" >> benchmark.txt
+          
+          START=$(date +%s%N)
+          for i in {1..500}; do
+            node dist/index.js -y git push --force > /dev/null 2>&1
+          done
+          END=$(date +%s%N)
+          
+          ELAPSED=$((($END - $START) / 1000000))
+          AVG=$(($ELAPSED / 500))
+          
+          echo "- Total time: ${ELAPSED}ms" >> benchmark.txt
+          echo "- Average per command: ${AVG}ms" >> benchmark.txt
+          
+          cat benchmark.txt
+      
+      - name: Benchmark - Stats Display
+        run: |
+          echo "" >> benchmark.txt
+          echo "## 📊 Stats Display Performance" >> benchmark.txt
+          echo "Testing stats rendering speed..." >> benchmark.txt
+          echo "" >> benchmark.txt
+          
+          START=$(date +%s%N)
+          for i in {1..100}; do
+            sentinel stats > /dev/null 2>&1
+          done
+          END=$(date +%s%N)
+          
+          ELAPSED=$((($END - $START) / 1000000))
+          AVG=$(($ELAPSED / 100))
+          
+          echo "- Total time: ${ELAPSED}ms" >> benchmark.txt
+          echo "- Average per render: ${AVG}ms" >> benchmark.txt
+          
+          cat benchmark.txt
+      
+      - name: Memory Usage Test
+        run: |
+          echo "" >> benchmark.txt
+          echo "## 💾 Memory Usage" >> benchmark.txt
+          echo "Testing memory footprint..." >> benchmark.txt
+          echo "" >> benchmark.txt
+          
+          /usr/bin/time -v node dist/index.js -y echo "memory test" 2>&1 | grep "Maximum resident set size" >> benchmark.txt || true
+          
+          cat benchmark.txt
+      
+      - name: Create benchmark summary
+        run: |
+          echo "## 🏆 Performance Benchmark Results" >> $GITHUB_STEP_SUMMARY
+          cat benchmark.txt >> $GITHUB_STEP_SUMMARY
+      
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const benchmark = fs.readFileSync('benchmark.txt', 'utf8');
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🏆 Performance Benchmark Results\n\n${benchmark}\n\n---\n*Automated benchmark from workflow*`
+            });
+      
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: benchmark.txt
+          retention-days: 30

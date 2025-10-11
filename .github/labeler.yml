@@ -1,0 +1,84 @@
+# Configuration for auto-labeling pull requests
+
+# Documentation
+documentation:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'docs/**/*'
+      - '*.md'
+      - 'README.md'
+      - 'CHANGELOG.md'
+
+# Core functionality
+core:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'src/core/**/*'
+
+# UI/UX
+ui:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'src/ui/**/*'
+
+# Utilities
+utils:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'src/utils/**/*'
+
+# Tests
+tests:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'tests/**/*'
+      - '**/*.test.ts'
+      - '**/*.spec.ts'
+
+# Configuration
+config:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'config/**/*'
+      - '*.yml'
+      - '*.yaml'
+      - '*.json'
+      - 'tsconfig.json'
+      - 'jest.config.js'
+      - 'eslint.config.js'
+
+# Plugins
+plugins:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'plugins/**/*'
+
+# CI/CD
+ci-cd:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '.github/workflows/**/*'
+      - '.github/**/*'
+
+# Dependencies
+dependencies:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'npm-shrinkwrap.json'
+
+# TypeScript
+typescript:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/*.ts'
+      - 'tsconfig.json'
+
+# JavaScript
+javascript:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/*.js'
+      - '**/*.mjs'
+      - '**/*.cjs'

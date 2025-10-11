@@ -1,0 +1,71 @@
+name: Stale Issues and PRs
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Diariamente à meia-noite UTC
+  workflow_dispatch:
+
+jobs:
+  stale:
+    name: Mark and Close Stale Items
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          
+          # Issues configuration
+          stale-issue-message: |
+            👋 Esta issue está inativa há 60 dias e será fechada automaticamente em 7 dias se não houver atividade.
+            
+            Se você ainda está enfrentando este problema, por favor comente abaixo para reabrir a discussão.
+            
+            Obrigado por contribuir com o Sentinel! 🛡️
+          
+          close-issue-message: |
+            🔒 Esta issue foi fechada automaticamente devido à inatividade.
+            
+            Se você ainda precisa de ajuda com este problema, sinta-se à vontade para reabrir ou criar uma nova issue.
+          
+          days-before-stale: 60
+          days-before-close: 7
+          stale-issue-label: 'stale'
+          close-issue-label: 'auto-closed'
+          exempt-issue-labels: 'pinned,security,roadmap,help-wanted'
+          
+          # Pull Requests configuration
+          stale-pr-message: |
+            👋 Este Pull Request está inativo há 30 dias e será fechado automaticamente em 7 dias se não houver atividade.
+            
+            Se você ainda está trabalhando neste PR, por favor:
+            - Faça um rebase com a branch master
+            - Responda aos comentários pendentes
+            - Atualize a descrição se necessário
+            
+            Obrigado por contribuir com o Sentinel! 🛡️
+          
+          close-pr-message: |
+            🔒 Este Pull Request foi fechado automaticamente devido à inatividade.
+            
+            Se você ainda deseja que estas mudanças sejam mergeadas, por favor:
+            - Reabra o PR
+            - Faça rebase com master
+            - Responda aos comentários
+          
+          days-before-pr-stale: 30
+          days-before-pr-close: 7
+          stale-pr-label: 'stale'
+          close-pr-label: 'auto-closed'
+          exempt-pr-labels: 'pinned,security,in-progress'
+          
+          # Additional options
+          operations-per-run: 100
+          remove-stale-when-updated: true
+          ascending: true
+          
+          # Custom messages for different scenarios
+          exempt-all-milestones: false
+          exempt-all-assignees: false

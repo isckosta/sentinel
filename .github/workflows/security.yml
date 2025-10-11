@@ -1,0 +1,88 @@
+name: Security Audit
+
+on:
+  push:
+    branches: [master, develop]
+  pull_request:
+    branches: [master, develop]
+  schedule:
+    - cron: '0 0 * * *' # Diariamente à meia-noite UTC
+  workflow_dispatch:
+
+jobs:
+  audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run npm audit
+        id: npm-audit
+        run: |
+          echo "## 🔒 NPM Security Audit" > audit-report.txt
+          npm audit --audit-level=moderate >> audit-report.txt || true
+          cat audit-report.txt
+        continue-on-error: true
+      
+      - name: Check for vulnerable dependencies
+        run: |
+          VULNERABILITIES=$(npm audit --json | jq '.metadata.vulnerabilities.total')
+          echo "Total vulnerabilities: $VULNERABILITIES"
+          if [ "$VULNERABILITIES" -gt 0 ]; then
+            echo "⚠️ Found $VULNERABILITIES vulnerabilities"
+            npm audit
+          else
+            echo "✅ No vulnerabilities found"
+          fi
+        continue-on-error: true
+      
+      - name: Run Snyk security scan
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+      
+      - name: Security Summary
+        if: always()
+        run: |
+          echo "## 🛡️ Security Audit Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### NPM Audit" >> $GITHUB_STEP_SUMMARY
+          npm audit --json | jq -r '
+            "| Severity | Count |",
+            "|----------|-------|",
+            "| Critical | \(.metadata.vulnerabilities.critical) |",
+            "| High | \(.metadata.vulnerabilities.high) |",
+            "| Moderate | \(.metadata.vulnerabilities.moderate) |",
+            "| Low | \(.metadata.vulnerabilities.low) |",
+            "| **Total** | **\(.metadata.vulnerabilities.total)** |"
+          ' >> $GITHUB_STEP_SUMMARY || echo "No vulnerabilities data available" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Create issue on vulnerabilities
+        if: failure() && github.event_name == 'schedule'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const date = new Date().toISOString().split('T')[0];
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🚨 Security vulnerabilities detected - ${date}`,
+              body: `Security audit has detected vulnerabilities in dependencies.
+              
+              Please review the [workflow run](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}) for details.
+              
+              Run \`npm audit\` locally to see the full report and \`npm audit fix\` to attempt automatic fixes.`,
+              labels: ['security', 'dependencies']
+            })

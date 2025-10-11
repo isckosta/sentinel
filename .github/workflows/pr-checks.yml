@@ -1,0 +1,167 @@
+name: PR Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+jobs:
+  pr-validation:
+    name: Validate PR
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check PR title
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            build
+            ci
+            chore
+            revert
+          requireScope: false
+          subjectPattern: ^[A-Z].+$
+          subjectPatternError: |
+            O título do PR deve começar com letra maiúscula.
+            Exemplo: "feat: adiciona nova funcionalidade"
+      
+      - name: Check PR size
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const additions = pr.additions;
+            const deletions = pr.deletions;
+            const total = additions + deletions;
+            
+            let size = 'small';
+            let emoji = '🟢';
+            let message = 'PR pequeno - fácil de revisar!';
+            
+            if (total > 1000) {
+              size = 'extra-large';
+              emoji = '🔴';
+              message = 'PR muito grande - considere dividir em PRs menores';
+            } else if (total > 500) {
+              size = 'large';
+              emoji = '🟠';
+              message = 'PR grande - pode ser difícil de revisar';
+            } else if (total > 200) {
+              size = 'medium';
+              emoji = '🟡';
+              message = 'PR médio';
+            }
+            
+            core.summary
+              .addHeading(`${emoji} Tamanho do PR: ${size}`)
+              .addRaw(`\n**Total de mudanças**: ${total} linhas\n`)
+              .addRaw(`- Adições: ${additions}\n`)
+              .addRaw(`- Deleções: ${deletions}\n`)
+              .addRaw(`\n${message}`)
+              .write();
+      
+      - name: Check for breaking changes
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const body = pr.body || '';
+            const title = pr.title || '';
+            
+            const hasBreaking = 
+              title.includes('BREAKING CHANGE') ||
+              title.includes('!:') ||
+              body.includes('BREAKING CHANGE');
+            
+            if (hasBreaking) {
+              core.warning('⚠️ Este PR contém BREAKING CHANGES!');
+              core.summary
+                .addHeading('⚠️ Breaking Changes Detectadas')
+                .addRaw('\nEste PR contém mudanças que quebram compatibilidade.\n')
+                .addRaw('Certifique-se de:\n')
+                .addList([
+                  'Atualizar a versão major no package.json',
+                  'Documentar as breaking changes no CHANGELOG.md',
+                  'Atualizar a documentação afetada',
+                  'Adicionar migration guide se necessário'
+                ])
+                .write();
+            }
+      
+      - name: Check for tests
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number
+            });
+            
+            const hasSourceChanges = files.some(f => 
+              f.filename.startsWith('src/') && 
+              f.filename.endsWith('.ts') &&
+              !f.filename.includes('.test.ts')
+            );
+            
+            const hasTestChanges = files.some(f => 
+              f.filename.includes('.test.ts') ||
+              f.filename.startsWith('tests/')
+            );
+            
+            if (hasSourceChanges && !hasTestChanges) {
+              core.warning('⚠️ Este PR modifica código fonte mas não adiciona/atualiza testes');
+              core.summary
+                .addHeading('⚠️ Testes Ausentes')
+                .addRaw('\nEste PR modifica código fonte mas não inclui testes.\n')
+                .addRaw('Considere adicionar testes para as mudanças realizadas.\n')
+                .write();
+            }
+      
+      - name: Check for documentation
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number
+            });
+            
+            const hasSourceChanges = files.some(f => 
+              f.filename.startsWith('src/') && 
+              f.filename.endsWith('.ts')
+            );
+            
+            const hasDocChanges = files.some(f => 
+              f.filename.endsWith('.md') ||
+              f.filename.startsWith('docs/')
+            );
+            
+            if (hasSourceChanges && !hasDocChanges) {
+              core.notice('💡 Considere atualizar a documentação se necessário');
+            }
+      
+      - name: Welcome first-time contributors
+        uses: actions/first-interaction@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          pr-message: |
+            👋 Obrigado pela sua primeira contribuição ao Sentinel!
+            
+            Aqui estão algumas dicas:
+            - Certifique-se de que todos os testes passam
+            - Siga o guia de estilo do projeto
+            - Atualize a documentação se necessário
+            - Seja paciente - revisaremos seu PR em breve!
+            
+            Se você tiver dúvidas, não hesite em perguntar. Estamos aqui para ajudar! 🛡️

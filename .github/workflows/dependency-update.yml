@@ -1,0 +1,81 @@
+name: Dependency Update
+
+on:
+  schedule:
+    - cron: '0 0 * * 1' # Toda segunda-feira à meia-noite UTC
+  workflow_dispatch: # Permite execução manual
+
+jobs:
+  update:
+    name: Update Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Check for outdated packages
+        id: outdated
+        run: |
+          echo "## 📦 Outdated Packages" > outdated.txt
+          npm outdated || true
+          npm outdated >> outdated.txt || true
+      
+      - name: Check for security vulnerabilities
+        id: audit
+        run: |
+          echo "## 🔒 Security Audit" > audit.txt
+          npm audit || true
+          npm audit >> audit.txt || true
+      
+      - name: Update dependencies
+        run: |
+          npm update
+          npm audit fix --force || true
+      
+      - name: Run tests
+        run: |
+          npm ci
+          npm test
+        continue-on-error: true
+      
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: 'chore: automated dependency update'
+          committer: GitHub <noreply@github.com>
+          author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+          signoff: false
+          branch: dependency-update
+          delete-branch: true
+          title: '🔄 Automated Dependency Update'
+          body: |
+            ## 🤖 Automated Dependency Update
+            
+            This PR updates npm dependencies to their latest versions.
+            
+            ### 📦 Changes
+            - Updated npm packages
+            - Fixed security vulnerabilities (if any)
+            
+            ### ✅ Checklist
+            - [ ] Review updated dependencies
+            - [ ] Check for breaking changes
+            - [ ] Verify tests pass
+            - [ ] Update CHANGELOG.md if needed
+            
+            ### 📊 Details
+            See commit for full list of updated packages.
+            
+            ---
+            *This PR was automatically created by the Dependency Update workflow.*
+          labels: |
+            dependencies
+            automated
+          draft: false

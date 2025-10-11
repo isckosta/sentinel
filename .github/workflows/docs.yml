@@ -1,0 +1,168 @@
+name: Documentation
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'docs/**'
+      - 'README.md'
+      - 'src/**/*.ts'
+      - '.github/workflows/docs.yml'
+  workflow_dispatch:
+
+jobs:
+  docs:
+    name: Generate and Deploy Documentation
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install TypeDoc
+        run: npm install --save-dev typedoc
+      
+      - name: Generate TypeDoc
+        run: |
+          npx typedoc --out docs-generated/api \
+            --entryPoints src/index.ts \
+            --entryPoints src/types/index.ts \
+            --entryPoints src/core \
+            --name "Sentinel API Documentation" \
+            --readme README.md \
+            --theme default \
+            --excludePrivate \
+            --excludeProtected
+      
+      - name: Copy documentation files
+        run: |
+          mkdir -p docs-generated
+          cp -r docs/* docs-generated/ || true
+          cp README.md docs-generated/
+          cp CHANGELOG.md docs-generated/
+          cp LICENSE docs-generated/
+      
+      - name: Create index page
+        run: |
+          cat > docs-generated/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="pt-BR">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Sentinel Documentation</title>
+            <style>
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 2rem;
+                background: #f5f5f5;
+              }
+              .header {
+                text-align: center;
+                margin-bottom: 3rem;
+              }
+              .header h1 {
+                font-size: 3rem;
+                margin: 0;
+                color: #333;
+              }
+              .header p {
+                font-size: 1.2rem;
+                color: #666;
+              }
+              .cards {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 2rem;
+              }
+              .card {
+                background: white;
+                padding: 2rem;
+                border-radius: 8px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                text-decoration: none;
+                color: inherit;
+                transition: transform 0.2s;
+              }
+              .card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+              }
+              .card h2 {
+                margin-top: 0;
+                color: #0066cc;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h1>🛡️ Sentinel</h1>
+              <p>O guardião entre você e o caos</p>
+            </div>
+            <div class="cards">
+              <a href="README.html" class="card">
+                <h2>📖 README</h2>
+                <p>Documentação principal do projeto</p>
+              </a>
+              <a href="api/" class="card">
+                <h2>🔧 API Documentation</h2>
+                <p>Documentação técnica da API</p>
+              </a>
+              <a href="QUICK_START.html" class="card">
+                <h2>🚀 Quick Start</h2>
+                <p>Comece em 5 minutos</p>
+              </a>
+              <a href="ARCHITECTURE.html" class="card">
+                <h2>🏗️ Architecture</h2>
+                <p>Arquitetura do sistema</p>
+              </a>
+              <a href="PLUGIN_GUIDE.html" class="card">
+                <h2>🔌 Plugin Guide</h2>
+                <p>Guia de desenvolvimento de plugins</p>
+              </a>
+              <a href="EXAMPLES.html" class="card">
+                <h2>📝 Examples</h2>
+                <p>Exemplos práticos de uso</p>
+              </a>
+              <a href="CONTRIBUTING.html" class="card">
+                <h2>🤝 Contributing</h2>
+                <p>Como contribuir</p>
+              </a>
+              <a href="CHANGELOG.html" class="card">
+                <h2>📋 Changelog</h2>
+                <p>Histórico de versões</p>
+              </a>
+            </div>
+          </body>
+          </html>
+          EOF
+      
+      - name: Convert Markdown to HTML
+        run: |
+          npm install -g marked
+          for file in docs-generated/*.md; do
+            if [ -f "$file" ]; then
+              basename="${file%.md}"
+              marked "$file" > "${basename}.html"
+            fi
+          done
+      
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs-generated
+          cname: sentinel-docs.example.com
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'

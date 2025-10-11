@@ -1,0 +1,119 @@
+name: Nightly Build
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # 2 AM UTC todos os dias
+  workflow_dispatch:
+
+jobs:
+  nightly:
+    name: Nightly Build and Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Lint
+        run: npm run lint
+      
+      - name: Build
+        run: npm run build
+      
+      - name: Run all tests
+        run: npm test
+      
+      - name: Run tests with coverage
+        run: npm run test:coverage
+      
+      - name: Link package globally
+        run: npm link
+      
+      - name: Integration test - Basic commands
+        run: |
+          echo "Testing basic commands..."
+          sentinel echo "Nightly test"
+          sentinel -y echo "Auto-approve test"
+      
+      - name: Integration test - Stats
+        run: |
+          echo "Testing stats display..."
+          sentinel stats
+      
+      - name: Integration test - Help
+        run: |
+          echo "Testing help command..."
+          sentinel --help
+          sentinel --version
+      
+      - name: Integration test - Risk levels
+        run: |
+          echo "Testing risk assessment..."
+          # Safe command
+          sentinel -y npm test || true
+          # Warning command (will be blocked in CI)
+          echo "n" | sentinel git push --force || true
+      
+      - name: Check package size
+        run: |
+          npm pack
+          SIZE=$(du -h *.tgz | cut -f1)
+          echo "Package size: $SIZE"
+          echo "## 📦 Package Size: $SIZE" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Test installation
+        run: |
+          # Test global installation
+          npm pack
+          npm install -g *.tgz
+          which sentinel
+          sentinel --version
+      
+      - name: Nightly summary
+        if: always()
+        run: |
+          echo "## 🌙 Nightly Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Date**: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Node Version**: $(node --version)" >> $GITHUB_STEP_SUMMARY
+          echo "- **NPM Version**: $(npm --version)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Notify on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const date = new Date().toISOString().split('T')[0];
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🚨 Nightly build failed - ${date}`,
+              body: `The nightly build has failed. Please investigate.
+              
+              **Workflow Run**: https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}
+              
+              **Date**: ${date}
+              **Node Version**: ${process.version}
+              
+              This issue was automatically created by the nightly build workflow.`,
+              labels: ['bug', 'nightly-failure', 'automated']
+            });
+      
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-build-${{ github.run_number }}
+          path: |
+            dist/
+            coverage/
+            *.tgz
+          retention-days: 7
