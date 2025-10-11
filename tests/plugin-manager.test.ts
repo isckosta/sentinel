@@ -23,6 +23,7 @@ describe('PluginManager', () => {
     };
 
     // Manually add plugin for testing
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (pluginManager as any).plugins.push(mockPlugin);
 
     const command: ParsedCommand = {
@@ -46,6 +47,7 @@ describe('PluginManager', () => {
       },
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (pluginManager as any).plugins.push(faultyPlugin);
 
     const command: ParsedCommand = {
@@ -72,6 +74,7 @@ describe('PluginManager', () => {
       },
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (pluginManager as any).plugins.push(mockPlugin);
 
     const event: TelemetryEvent = {
@@ -98,6 +101,7 @@ describe('PluginManager', () => {
       evaluate: (_command: ParsedCommand, score: number) => score,
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (pluginManager as any).plugins.push(plugin1, plugin2);
 
     const pluginNames = pluginManager.getLoadedPlugins();
