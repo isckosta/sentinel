@@ -71,9 +71,9 @@ export class Telemetry {
     try {
       if (existsSync(this.eventsFile)) {
         const data = readFileSync(this.eventsFile, 'utf-8');
-        const events = JSON.parse(data);
+        const events = JSON.parse(data) as Array<Omit<TelemetryEvent, 'timestamp'> & { timestamp: string }>;
         // Convert timestamp strings back to Date objects
-        return events.map((e: any) => ({
+        return events.map((e) => ({
           ...e,
           timestamp: new Date(e.timestamp),
         }));
