@@ -136,4 +136,24 @@ describe('RiskEngine', () => {
 
     expect(assessment.matchedRules.some(r => r.message === 'Deploy sem review?')).toBe(true);
   });
+
+  test('should intercept command globally when globalIntercept is true and no other rules match', () => {
+    config.globalIntercept = true;
+    engine = new RiskEngine(config);
+
+    const command: ParsedCommand = {
+      binary: 'ls',
+      args: ['-la'],
+      fullCommand: 'ls -la',
+      currentBranch: 'feature/test',
+      currentDirectory: '/test',
+      environment: 'development',
+    };
+
+    const assessment = engine.assess(command);
+
+    expect(assessment.level).toBe('warning');
+    expect(assessment.score).toBe(40);
+    expect(assessment.reasons).toContain('Interceptação global ativada: comando monitorado.');
+  });
 });
