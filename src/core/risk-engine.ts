@@ -24,11 +24,19 @@ export class RiskEngine {
       }
     }
 
-    // Apply heuristics
-    score += this.applyHeuristics(command, reasons);
+    // Apply heuristics only if global intercept is on or if a rule already matched
+    if (this.config.globalIntercept || score > 0) {
+      score += this.applyHeuristics(command, reasons);
+    }
 
     // Normalize score to 0-100
     score = Math.min(100, Math.max(0, score));
+
+    // Global Intercept if enabled and current level is still safe (no explicit rule matched as warning/critical)
+    if (this.config.globalIntercept && this.calculateLevel(score) === 'safe') {
+      score = 40; // Assign a score that results in 'warning' level
+      reasons.push('Interceptação global ativada: comando monitorado.');
+    }
 
     return {
       score,
