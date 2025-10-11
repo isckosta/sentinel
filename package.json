@@ -1,0 +1,80 @@
+{
+  "name": "@mhsolutions/sentinel",
+  "version": "0.1.0",
+  "description": "O guardião entre você e o caos. Um firewall cognitivo para DevOps.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "sentinel": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "config",
+    "plugins",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "prepublishOnly": "npm run build && npm test",
+    "release": "npm version patch && npm publish",
+    "release:minor": "npm version minor && npm publish",
+    "release:major": "npm version major && npm publish"
+  },
+  "keywords": [
+    "devops",
+    "cli",
+    "firewall",
+    "safety",
+    "automation",
+    "sentinel",
+    "risk-management",
+    "command-protection",
+    "deployment-safety"
+  ],
+  "author": "MH Solutions",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mhsolutions/sentinel.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mhsolutions/sentinel/issues"
+  },
+  "homepage": "https://github.com/mhsolutions/sentinel#readme",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "commander": "^14.0.1",
+    "inquirer": "^12.3.0",
+    "js-yaml": "^4.1.0",
+    "ora": "^9.0.0",
+    "pino": "^10.0.0",
+    "pino-pretty": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^9.0.7",
+    "@types/jest": "^30.0.0",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^24.7.1",
+    "@typescript-eslint/eslint-plugin": "^8.20.0",
+    "@typescript-eslint/parser": "^8.20.0",
+    "eslint": "^9.20.0",
+    "jest": "^30.2.0",
+    "prettier": "^3.4.2",
+    "ts-jest": "^29.4.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

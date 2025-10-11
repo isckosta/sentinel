@@ -1,0 +1,93 @@
+rules:
+  # Database Operations
+  - pattern: "*migrate reset*"
+    level: critical
+    message: "Esse comando parece suicida. Quer pensar de novo?"
+    conditions:
+      branch: "!main"
+      env: "!production"
+
+  - pattern: "*migrate*--force*"
+    level: critical
+    message: "Migração forçada? Isso raramente termina bem."
+
+  - pattern: "*prisma db push*--force*"
+    level: critical
+    message: "Push forçado no banco? Espero que tenha backup."
+
+  - pattern: "*drop database*"
+    level: critical
+    message: "DROP DATABASE? Sério? Respire fundo antes de continuar."
+
+  - pattern: "*truncate*"
+    level: warning
+    message: "TRUNCATE vai limpar tudo. Tem certeza?"
+
+  # Deployment Operations
+  - pattern: "*deploy*main*"
+    level: critical
+    message: "Deploy sem review? Tá apostando contra o universo?"
+
+  - pattern: "*deploy*master*"
+    level: critical
+    message: "Deploy direto da master? Onde está o processo de review?"
+
+  - pattern: "*deploy*production*"
+    level: warning
+    message: "Deploy em produção. Todos os testes passaram?"
+
+  - pattern: "*kubectl delete*production*"
+    level: critical
+    message: "Deletar recursos em produção? Isso vai doer."
+
+  - pattern: "*kubectl delete*--all*"
+    level: critical
+    message: "Delete all? Espero que saiba o que está fazendo."
+
+  # Git Operations
+  - pattern: "*git push*--force*"
+    level: warning
+    message: "Force push pode reescrever história. Equipe está ciente?"
+
+  - pattern: "*git reset*--hard*"
+    level: warning
+    message: "Hard reset vai descartar mudanças. Tem certeza?"
+
+  - pattern: "*git clean*-fd*"
+    level: warning
+    message: "Git clean vai deletar arquivos não rastreados permanentemente."
+
+  # File Operations
+  - pattern: "*rm -rf /*"
+    level: critical
+    message: "Isso vai destruir o sistema. PARE IMEDIATAMENTE."
+
+  - pattern: "*rm -rf*"
+    level: warning
+    message: "Remoção recursiva forçada. Verifique o caminho duas vezes."
+
+  - pattern: "*chmod 777*"
+    level: warning
+    message: "Permissões 777? Isso é um risco de segurança."
+
+  # Docker Operations
+  - pattern: "*docker system prune*-a*"
+    level: warning
+    message: "Isso vai remover todos os containers, imagens e volumes não usados."
+
+  - pattern: "*docker rm*-f*"
+    level: warning
+    message: "Forçar remoção de containers pode causar perda de dados."
+
+  # NPM/Package Operations
+  - pattern: "*npm publish*"
+    level: warning
+    message: "Publicando no NPM. Versão e changelog estão corretos?"
+
+  - pattern: "*npm unpublish*"
+    level: critical
+    message: "Unpublish é irreversível e pode quebrar dependências."
+
+# Plugin paths (relative to project root)
+plugins:
+  - "./plugins/custom-branch-check.js"
