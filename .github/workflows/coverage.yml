@@ -27,19 +27,14 @@ jobs:
       
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
+        if: always()
+        continue-on-error: true
         with:
           file: ./coverage/lcov.info
           flags: unittests
           name: sentinel-coverage
           fail_ci_if_error: false
-      
-      - name: Generate coverage badge
-        uses: cicirello/jacoco-badge-generator@v2
-        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-        with:
-          badges-directory: badges
-          generate-branches-badge: true
-          generate-summary: true
+          token: ${{ secrets.CODECOV_TOKEN }}
       
       - name: Comment PR with coverage
         if: github.event_name == 'pull_request'
@@ -50,18 +45,60 @@ jobs:
           delete-old-comments: true
       
       - name: Coverage Summary
+        if: always()
         run: |
-          echo "## 📊 Coverage Summary" >> $GITHUB_STEP_SUMMARY
+          echo "## 📊 Test Coverage Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          
           if [ -f coverage/coverage-summary.json ]; then
             node -e "
-              const coverage = require('./coverage/coverage-summary.json');
+              const fs = require('fs');
+              const coverage = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8'));
               const total = coverage.total;
-              console.log('| Metric | Coverage |');
-              console.log('|--------|----------|');
-              console.log('| Lines | ' + total.lines.pct + '% |');
-              console.log('| Statements | ' + total.statements.pct + '% |');
-              console.log('| Functions | ' + total.functions.pct + '% |');
-              console.log('| Branches | ' + total.branches.pct + '% |');
+              
+              const getEmoji = (pct) => {
+                if (pct >= 80) return '✅';
+                if (pct >= 60) return '⚠️';
+                return '❌';
+              };
+              
+              const getColor = (pct) => {
+                if (pct >= 80) return 'green';
+                if (pct >= 60) return 'yellow';
+                return 'red';
+              };
+              
+              console.log('| Metric | Coverage | Status |');
+              console.log('|--------|----------|--------|');
+              console.log('| Lines | ' + total.lines.pct + '% | ' + getEmoji(total.lines.pct) + ' |');
+              console.log('| Statements | ' + total.statements.pct + '% | ' + getEmoji(total.statements.pct) + ' |');
+              console.log('| Functions | ' + total.functions.pct + '% | ' + getEmoji(total.functions.pct) + ' |');
+              console.log('| Branches | ' + total.branches.pct + '% | ' + getEmoji(total.branches.pct) + ' |');
+              console.log('');
+              console.log('**Overall Coverage**: ' + total.lines.pct + '% ' + getEmoji(total.lines.pct));
             " >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Coverage report not found" >> $GITHUB_STEP_SUMMARY
           fi
+      
+      - name: Check coverage threshold
+        run: |
+          if [ -f coverage/coverage-summary.json ]; then
+            node -e "
+              const fs = require('fs');
+              const coverage = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8'));
+              const threshold = 60; // Minimum coverage threshold
+              const lineCoverage = coverage.total.lines.pct;
+              
+              console.log('Line coverage: ' + lineCoverage + '%');
+              console.log('Threshold: ' + threshold + '%');
+              
+              if (lineCoverage < threshold) {
+                console.error('❌ Coverage is below threshold!');
+                process.exit(1);
+              } else {
+                console.log('✅ Coverage meets threshold');
+              }
+            "
+          fi
+        continue-on-error: true
