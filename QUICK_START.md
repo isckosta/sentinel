@@ -65,6 +65,26 @@ sentinel exec git push --force
 5. 📚 Leia a [documentação completa](../README.md)
 6. 🔌 Explore [plugins](./PLUGIN_GUIDE.md)
 
+## 5. Configuração Personalizada (`sentinel.yml`)
+
+O Sentinel utiliza um arquivo de configuração chamado `sentinel.yml` para definir regras de risco, caminhos de plugins e outras configurações.
+
+**Como o Sentinel encontra seu `sentinel.yml`:**
+
+O Sentinel procura pelo arquivo `sentinel.yml` na seguinte ordem de prioridade:
+
+1.  **No diretório de trabalho atual:**
+    *   `./sentinel.yml`
+    *   `./.sentinel.yml` (arquivo oculto)
+    *   `./config/sentinel.yml`
+2.  **Como fallback:** Se nenhum dos arquivos acima for encontrado, o Sentinel utilizará o arquivo `sentinel.yml` padrão que vem com a instalação do pacote.
+
+**Como personalizar:**
+
+Para personalizar as regras e configurações do Sentinel, simplesmente crie um arquivo `sentinel.yml` (ou `.sentinel.yml`, ou `config/sentinel.yml`) na raiz do seu projeto. Este arquivo será automaticamente detectado e terá precedência sobre a configuração padrão do pacote.
+
+Você pode começar copiando o conteúdo do arquivo de configuração padrão (encontrado em `node_modules/@mhsolutions/sentinel/config/sentinel.yml` após a instalação) para o seu projeto e modificá-lo conforme suas necessidades.
+
 ---
 
 **Pronto!** Você está protegido pelo Sentinel. 🛡️
