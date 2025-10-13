@@ -58,6 +58,7 @@ export interface TelemetryStats {
 
 export interface SentinelConfig {
   globalIntercept?: boolean;
+  logLevel?: 'info' | 'debug' | 'silent';
   rules: RiskRule[];
   plugins?: string[];
   telemetryEnabled?: boolean;

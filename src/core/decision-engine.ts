@@ -2,7 +2,18 @@ import inquirer from 'inquirer';
 import chalk from 'chalk';
 import { RiskAssessment, DecisionResult, ParsedCommand } from '../types';
 
+/**
+ * @class DecisionEngine
+ * @description Responsible for making decisions based on the risk assessment of a command, interacting with the user for confirmation when necessary.
+ */
 export class DecisionEngine {
+  /**
+   * Makes a decision based on the command's risk assessment.
+   * For 'safe' commands, it allows execution. For 'warning' and 'critical' commands, it prompts the user for confirmation.
+   * @param command The parsed command object.
+   * @param assessment The risk assessment result for the command.
+   * @returns A DecisionResult object indicating the action taken (allow, block, confirm) and whether the command was executed.
+   */
   async decide(
     command: ParsedCommand,
     assessment: RiskAssessment
@@ -25,6 +36,14 @@ export class DecisionEngine {
     }
   }
 
+  /**
+   * Handles commands with a 'warning' risk level.
+   * Prompts the user for confirmation before proceeding with execution.
+   * @param command The parsed command object.
+   * @param assessment The risk assessment result.
+   * @param timestamp The timestamp of the decision.
+   * @returns A DecisionResult object based on user confirmation.
+   */
   private async handleWarning(
     command: ParsedCommand,
     assessment: RiskAssessment,
@@ -61,6 +80,14 @@ export class DecisionEngine {
     };
   }
 
+  /**
+   * Handles commands with a 'critical' risk level.
+   * Requires explicit user confirmation and re-typing the command to proceed, acting as a strong safeguard.
+   * @param command The parsed command object.
+   * @param assessment The risk assessment result.
+   * @param timestamp The timestamp of the decision.
+   * @returns A DecisionResult object based on user confirmation, potentially blocking the command.
+   */
   private async handleCritical(
     command: ParsedCommand,
     assessment: RiskAssessment,

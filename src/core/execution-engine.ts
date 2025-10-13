@@ -6,31 +6,42 @@ import { DecisionEngine } from './decision-engine';
 import { Telemetry } from './telemetry';
 import { PluginManager } from './plugin-manager';
 import { ConfigLoader } from '../utils/config-loader';
-import { logger } from '../utils/logger';
+import { getLogger } from '../utils/logger';
 
+/**
+ * Calculates the risk level based on a given score.
+ * @param score The risk score (0-100).
+ * @returns The corresponding RiskLevel ('safe', 'warning', or 'critical').
+ */
 function calculateLevel(score: number): 'safe' | 'warning' | 'critical' {
   if (score >= 70) return 'critical';
   if (score >= 40) return 'warning';
   return 'safe';
 }
 
+/**
+ * Executes a command with Sentinel's risk analysis and decision-making process.
+ * This function orchestrates the loading of configuration, parsing of the command, risk assessment,
+ * user interaction for risky commands, plugin application, telemetry recording, and eventual command execution.
+ * @param commandArgs An array of strings representing the command and its arguments.
+ * @param options An object containing execution options, such as a custom config path or the '--yes' flag.
+ * @param executionOptions An object specifying execution behavior, like 'analyzeOnly'.
+ */
 export async function executeWithSentinel(
   commandArgs: string[],
   options: { config?: string; yes?: boolean },
   executionOptions: { analyzeOnly: boolean }
 ): Promise<void> {
+  const logger = getLogger();
   try {
-    // Load configuration
     const config = ConfigLoader.load(options.config);
 
-    // Initialize components
     const parser = new CommandParser();
     const riskEngine = new RiskEngine(config);
     const decisionEngine = new DecisionEngine();
     const telemetry = new Telemetry();
     const pluginManager = new PluginManager();
 
-    // Load plugins if configured
     if (config.plugins && config.plugins.length > 0) {
       await pluginManager.loadPlugins(config.plugins);
       const loadedPlugins = pluginManager.getLoadedPlugins();
@@ -39,14 +50,11 @@ export async function executeWithSentinel(
       }
     }
 
-    // Parse command
     const parsedCommand = parser.parse(commandArgs);
     logger.info({ command: parsedCommand.fullCommand }, 'Command received');
 
-    // Assess risk
     let assessment = riskEngine.assess(parsedCommand);
 
-    // Apply plugins to adjust risk score
     const adjustedScore = pluginManager.applyPlugins(parsedCommand, assessment.score);
     if (adjustedScore !== assessment.score) {
       assessment = {
@@ -65,34 +73,27 @@ export async function executeWithSentinel(
       'Risk assessment completed'
     );
 
-    // Make decision
     let decision;
     
     if (assessment.level === 'safe') {
-      // Comandos seguros são sempre aprovados
       decision = {
         action: 'allow' as const,
         executed: true,
         timestamp: new Date(),
       };
     } else if (options.yes) {
-      // Com a flag -y, comandos de warning/critical são auto-aprovados (com base na lógica anterior)
-      // Nota: Isso pode ser revisto, mas mantém o comportamento implícito
       decision = {
         action: 'allow' as const,
         executed: true,
         timestamp: new Date(),
       };
     } else {
-      // Apenas chame a decisão interativa para 'warning' e 'critical' sem a flag -y
       decision = await decisionEngine.decide(parsedCommand, assessment);
     }
 
-    // Record telemetry
     if (config.telemetryEnabled !== false) {
       telemetry.recordEvent(parsedCommand, assessment, decision);
       
-      // Notify plugins
       const event = {
         timestamp: decision.timestamp,
         command: parsedCommand.fullCommand,
@@ -104,12 +105,9 @@ export async function executeWithSentinel(
       pluginManager.notifyEvent(event);
     }
 
-    // --- MODIFIED LOGIC ---
     if (executionOptions.analyzeOnly) {
-      // In analyze-only mode, exit with status code, do not execute
       process.exit(decision.executed ? 0 : 1);
     } else {
-      // In exec mode, execute command if allowed
       if (decision.executed) {
         console.log(chalk.cyan('\n⚡ Executando comando...\n'));
         

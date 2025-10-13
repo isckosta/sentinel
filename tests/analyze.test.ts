@@ -11,10 +11,12 @@ jest.mock('../src/core/decision-engine');
 jest.mock('../src/core/risk-engine');
 jest.mock('../src/core/command-parser');
 jest.mock('../src/utils/logger', () => ({
-  logger: {
+  getLogger: jest.fn(() => ({
     info: jest.fn(),
+    warn: jest.fn(),
     error: jest.fn(),
-  },
+    debug: jest.fn(),
+  })),
 }));
 jest.mock('../src/core/telemetry', () => {
   return {

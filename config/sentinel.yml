@@ -1,4 +1,5 @@
-globalIntercept: false
+globalIntercept: true
+logLevel: debug
 rules:
   # Database Operations
   - pattern: "*migrate reset*"

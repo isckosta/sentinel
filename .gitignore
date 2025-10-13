@@ -1,6 +1,6 @@
 # Dependencies
 node_modules/
-package-lock.json
+# package-lock.json
 
 # Build output
 dist/
@@ -34,3 +34,5 @@ lerna-debug.log*
 
 # Sentinel data (for development)
 .sentinel/
+tests/__mocks__/
+GEMINI.md

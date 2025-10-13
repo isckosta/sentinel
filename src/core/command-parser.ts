@@ -1,7 +1,17 @@
 import { ParsedCommand } from '../types';
 import { getCurrentBranch } from '../utils/git-helper';
 
+/**
+ * @class CommandParser
+ * @description Parses raw command arguments and extracts relevant context for risk assessment.
+ */
 export class CommandParser {
+  /**
+   * Parses an array of command arguments into a structured ParsedCommand object.
+   * It extracts the binary, arguments, full command string, current Git branch, current directory, and detected environment.
+   * @param commandArgs An array of strings representing the command and its arguments.
+   * @returns A ParsedCommand object containing structured information about the command.
+   */
   parse(commandArgs: string[]): ParsedCommand {
     const fullCommand = commandArgs.join(' ');
     const binary = commandArgs[0] || '';
@@ -17,6 +27,10 @@ export class CommandParser {
     };
   }
 
+  /**
+   * Detects the current execution environment based on environment variables (NODE_ENV, ENVIRONMENT) and current working directory.
+   * @returns A string representing the detected environment (e.g., 'production', 'staging', 'development', or 'unknown').
+   */
   private detectEnvironment(): string {
     const env = process.env.NODE_ENV || process.env.ENVIRONMENT || '';
     
