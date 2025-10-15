@@ -39,8 +39,8 @@ jobs:
       - name: Integration test - Basic commands
         run: |
           echo "Testing basic commands..."
-          sentinel echo "Nightly test"
-          sentinel -y echo "Auto-approve test"
+          sentinel exec echo "Nightly test"
+          sentinel exec -y echo "Auto-approve test"
       
       - name: Integration test - Stats
         run: |

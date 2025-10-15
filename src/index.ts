@@ -11,7 +11,9 @@ const program = new Command();
 program
   .name('sentinel')
   .description('🛡️  O guardião entre você e o caos - Firewall cognitivo para DevOps')
-  .version('0.1.0');
+  .version('0.1.0')
+  .option('-y, --yes', 'Aceita automaticamente comandos de baixo risco')
+  .option('-c, --config <path>', 'Caminho para arquivo de configuração customizado');
 
 program
   .command('stats')
