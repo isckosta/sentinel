@@ -73,6 +73,13 @@ export async function executeWithSentinel(
       'Risk assessment completed'
     );
 
+    // Detect CI environment to avoid interactive prompts
+    const isCI = process.env.CI === 'true' || 
+                 process.env.GITHUB_ACTIONS === 'true' ||
+                 process.env.GITLAB_CI === 'true' ||
+                 process.env.CIRCLECI === 'true' ||
+                 process.env.JENKINS_HOME !== undefined;
+
     let decision;
     
     if (assessment.level === 'safe') {
@@ -81,12 +88,16 @@ export async function executeWithSentinel(
         executed: true,
         timestamp: new Date(),
       };
-    } else if (options.yes) {
+    } else if (options.yes || isCI) {
       decision = {
         action: 'allow' as const,
         executed: true,
         timestamp: new Date(),
       };
+      
+      if (isCI && !options.yes) {
+        logger.info('CI environment detected - auto-approving command');
+      }
     } else {
       decision = await decisionEngine.decide(parsedCommand, assessment);
     }

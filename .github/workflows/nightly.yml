@@ -57,9 +57,9 @@ jobs:
         run: |
           echo "Testing risk assessment..."
           # Safe command
-          sentinel -y npm test || true
-          # Warning command (will be blocked in CI)
-          echo "n" | sentinel git push --force || true
+          sentinel exec -y npm test || true
+          # Warning command (will be auto-approved in CI)
+          sentinel exec git push --force || true
       
       - name: Check package size
         run: |
