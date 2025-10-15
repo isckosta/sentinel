@@ -12,7 +12,7 @@ jobs:
     # Só roda se o commit NÃO for de release (evita loop)
     if: "!startsWith(github.event.head_commit.message, 'chore(release):')"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
