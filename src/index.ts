@@ -45,9 +45,10 @@ import { InitWizard } from './core/init-wizard';
 program
   .command('init [shell]')
   .description('Gera o script de integração para o shell especificado (bash, zsh, fish) ou inicia um assistente interativo.')
-  .action(async (shell: string | undefined) => {
+  .option('--reset', 'Remove a integração do Sentinel do arquivo de configuração do shell.')
+  .action(async (shell: string | undefined, options: { reset?: boolean }) => {
     const wizard = new InitWizard();
-    await wizard.run(shell);
+    await wizard.run(shell, options.reset);
   });
 
 // Default action when no command is specified

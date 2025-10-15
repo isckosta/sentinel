@@ -17,7 +17,22 @@ export class InitWizard {
    * Otherwise, it interactively detects the shell and prompts for integration.
    * @param shellArg Optional. The shell type (e.g., 'bash', 'zsh') to generate the script for directly.
    */
-  public async run(shellArg?: string): Promise<void> {
+  public async run(shellArg?: string, reset?: boolean): Promise<void> {
+    if (reset) {
+      const shell = this.detectShell();
+      if (!shell) {
+        console.error(chalk.red('Não foi possível detectar seu shell. Saindo.'));
+        process.exit(1);
+      }
+      const shellConfigPath = this.getShellConfigPath(shell);
+      if (!shellConfigPath) {
+        console.error(chalk.red(`Não foi possível encontrar o arquivo de configuração para o shell '${shell}'.`));
+        process.exit(1);
+      }
+      await this.removeIntegrationFromShell(shellConfigPath);
+      return;
+    }
+
     if (shellArg) {
       const script = this.generateShellScript(shellArg);
       if (script) {
@@ -111,7 +126,7 @@ Ok, por favor, adicione a seguinte linha ao seu arquivo '${shellConfigPath}' man
    * @returns The integration script as a string, or null if the shell is not supported.
    */
   private generateShellScript(shell: string): string | null {
-    const sentinelPath = path.resolve(process.argv[1] as string, '..', '..', 'dist', 'index.js');
+    const sentinelPath = path.resolve(__dirname, '..', '..', 'index.js');
     const commandPrefix = `/usr/bin/env node ${sentinelPath}`;
 
     switch (shell) {
@@ -212,6 +227,44 @@ trap '_sentinel_trap_debug' DEBUG
     content += `\n# Sentinel Integration End\n`;
 
     writeFileSync(shellConfigPath, content);
+  }
+
+  /**
+   * Removes the Sentinel integration script from the specified shell configuration file.
+   * Creates a backup of the original file before modification.
+   * @param shellConfigPath The absolute path to the shell's configuration file.
+   * @param shell The name of the shell.
+   */
+  private async removeIntegrationFromShell(shellConfigPath: string): Promise<void> {
+    if (!existsSync(shellConfigPath)) {
+      console.log(chalk.yellow(`
+O arquivo de configuração do shell '${shellConfigPath}' não existe. Nenhuma integração para remover.
+`));
+      return;
+    }
+
+    const backupPath = await this.backupFile(shellConfigPath);
+    console.log(chalk.gray(`Backup do arquivo de configuração do shell criado em: ${backupPath}`));
+
+    let content = readFileSync(shellConfigPath, 'utf-8');
+
+    const integrationRegex = /\n# Sentinel Integration Start\n[\s\S]*?\n# Sentinel Integration End\n/g;
+
+    if (!integrationRegex.test(content)) {
+      console.log(chalk.yellow(`
+Nenhuma integração do Sentinel encontrada no arquivo '${shellConfigPath}'. Nenhuma ação necessária.
+`));
+      return;
+    }
+
+    content = content.replace(integrationRegex, '\n');
+
+    writeFileSync(shellConfigPath, content);
+
+    console.log(chalk.green(`
+✅ Integração do Sentinel removida com sucesso do '${shellConfigPath}'.
+Por favor, abra um novo terminal ou execute 'source ${shellConfigPath}' para aplicar as mudanças.
+`));
   }
 
   /**
