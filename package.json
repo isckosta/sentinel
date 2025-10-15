@@ -1,6 +1,6 @@
 {
   "name": "@isckosta/sentinel",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "O guardião entre você e o caos. Um firewall cognitivo para DevOps.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
