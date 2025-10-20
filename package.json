@@ -57,10 +57,10 @@
   "dependencies": {
     "chalk": "^4.1.2",
     "commander": "^14.0.1",
-    "inquirer": "^12.3.0",
+    "inquirer": "^12.10.0",
     "js-yaml": "^4.1.0",
     "ora": "^9.0.0",
-    "pino": "^10.0.0",
+    "pino": "^10.1.0",
     "pino-pretty": "^13.0.0"
   },
   "devDependencies": {
@@ -68,9 +68,9 @@
     "@types/jest": "^30.0.0",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^24.7.1",
-    "@typescript-eslint/eslint-plugin": "^8.20.0",
+    "@typescript-eslint/eslint-plugin": "^8.46.2",
     "@typescript-eslint/parser": "^8.20.0",
-    "eslint": "^9.20.0",
+    "eslint": "^9.38.0",
     "jest": "^30.2.0",
     "prettier": "^3.4.2",
     "ts-jest": "^29.4.5",
