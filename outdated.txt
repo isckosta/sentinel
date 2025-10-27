@@ -1,0 +1,9 @@
+## 📦 Outdated Packages
+Package      Current   Wanted   Latest  Location  Depended by
+chalk        MISSING    4.1.2    5.6.2  -         sentinel
+commander    MISSING   14.0.2   14.0.2  -         sentinel
+inquirer     MISSING  12.10.0  12.10.0  -         sentinel
+js-yaml      MISSING    4.1.0    4.1.0  -         sentinel
+ora          MISSING    9.0.0    9.0.0  -         sentinel
+pino         MISSING   10.1.0   10.1.0  -         sentinel
+pino-pretty  MISSING   13.1.2   13.1.2  -         sentinel
